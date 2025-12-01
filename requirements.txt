@@ -1,0 +1,8 @@
+pandas
+numpy
+faiss-cpu
+tqdm
+streamlit
+sentence-transformers    # optional untuk embed lokal testing
+requests                 # untuk Gemini API
+python-dotenv
