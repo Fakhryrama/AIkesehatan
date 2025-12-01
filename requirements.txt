@@ -5,4 +5,5 @@ tqdm
 streamlit
 sentence-transformers    # optional untuk embed lokal testing
 requests                 # untuk Gemini API
+google-genai
 python-dotenv
