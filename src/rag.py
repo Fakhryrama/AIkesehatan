@@ -5,7 +5,7 @@ from sentence_transformers import SentenceTransformer
 from typing import List
 
 class RAGEngine:
-    def __init__(self, index_path="data/faiss.index", meta_path="data/meta.pkl", use_local=True):
+    def __init__(self, index_path="../data/faiss.index", meta_path="../data/meta.pkl", use_local=True):
         self.index = faiss.read_index(index_path)
         with open(meta_path, "rb") as f:
             self.meta = pickle.load(f)

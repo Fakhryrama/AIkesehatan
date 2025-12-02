@@ -2,7 +2,7 @@
 import streamlit as st
 from rag import RAGEngine
 import google.generativeai as genai
-genai.configure(api_key="AIzaSyAVw3sSrc16XJ3RBOIT-iLybK-_LSFKKm")
+genai.configure(api_key="AIzaSyApQVI4ey2lJeNqDkgOZ4RCwW8PU6uqxdA")
 def call_gemini(prompt):
     response = genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt)
     return response.text
