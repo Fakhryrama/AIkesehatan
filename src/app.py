@@ -4,7 +4,7 @@ from rag import RAGEngine
 import google.generativeai as genai
 genai.configure(api_key="AIzaSyAVw3sSrc16XJ3RBOIT-iLybK-_LSFKKms")
 def call_gemini(prompt):
-    response = genai.GenerativeModel("gemini-2.0-flash").generate_content(prompt)
+    response = genai.GenerativeModel("gemini-2.5-flash").generate_content(prompt)
     return response.text
 
 
@@ -72,4 +72,5 @@ Jawab dalam bahasa Indonesia.
 
 answer = call_gemini(prompt)
 st.write(answer)
+
 
