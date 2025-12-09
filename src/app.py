@@ -5,12 +5,9 @@ import google.generativeai as genai
 from datetime import datetime
 from rag import RAGEngine
 
-# =========================================================
+
 # API KEY GEMINI
-# =========================================================
 genai.configure(api_key="AIzaSyBk8cOT29S2JGlpvwh_WbyRWsUUPwz6bW8")
-
-
 def call_gemini(prompt: str) -> str:
     """Pemanggilan model Gemini yang sederhana dan aman."""
     try:
@@ -244,6 +241,7 @@ Gunakan informasi berikut untuk memberikan penjelasan edukatif, bukan diagnosis 
 Gunakan bahasa Indonesia yang sopan, jelas, dan mudah dipahami.
 """
 
+
                     answer = call_gemini(prompt)
 
                     st.markdown("### 💬 Rangkuman")
@@ -274,3 +272,5 @@ Gunakan aplikasi ini untuk:
 **Catatan:** Ini bukan pengganti pemeriksaan tenaga kesehatan.
         """
     )
+
+
