@@ -11,7 +11,7 @@ st.set_page_config(page_title="Konsultasi Gejala (Agentic)", page_icon="🩺", l
 
 # API KEY SETUP
 # Pastikan API Key aman. Di production gunakan st.secrets
-api_key = "AIzaSyDx0Qw_jQTAUpAlWrpj9yiuGQC30lErkr0" 
+api_key = "MASUKKAN_GEMINI_API" 
 genai.configure(api_key=api_key)
 
 # =========================================================
@@ -203,3 +203,4 @@ if prompt := st.chat_input("Contoh: Saya sakit kepala belakang berdenyut sejak k
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
+
