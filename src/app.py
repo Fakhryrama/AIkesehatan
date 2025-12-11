@@ -7,7 +7,8 @@ from rag import RAGEngine
 
 
 # API KEY GEMINI
-genai.configure(api_key="AIzaSyBk8cOT29S2JGlpvwh_WbyRWsUUPwz6bW8")
+genai.configure(api_key="AIzaSyBKA7UHgKU_qeGCZ_Zt-50siPcdXEuXlC4")  
+
 def call_gemini(prompt: str) -> str:
     """Pemanggilan model Gemini yang sederhana dan aman."""
     try:
@@ -46,6 +47,44 @@ def evaluate_severity(text: str):
         level = "ringan"
 
     return {"level": level, "red": red}
+
+
+# =========================================================
+# TOOL 3: KLASIFIKASI SISTEM TUBUH
+# =========================================================
+def classify_body_system(text: str):
+    """
+    Mengklasifikasikan gejala ke dalam sistem tubuh:
+    - Pernapasan
+    - Pencernaan
+    - Saraf / Kepala
+    - Kemih
+    - Kulit
+    """
+    t = text.lower()
+    systems = []
+
+    # Pernapasan
+    if any(w in t for w in ["batuk", "pilek", "flu", "sesak", "napas", "nafas", "tenggorokan", "dahak"]):
+        systems.append("Pernapasan")
+
+    # Pencernaan
+    if any(w in t for w in ["mual", "muntah", "diare", "perut", "ulu hati", "kembung", "asam lambung", "maag"]):
+        systems.append("Pencernaan")
+
+    # Saraf / Kepala
+    if any(w in t for w in ["pusing", "sakit kepala", "kepala berat", "migren", "migraine", "kejang", "baal", "kesemutan"]):
+        systems.append("Saraf / Kepala")
+
+    # Kemih
+    if any(w in t for w in ["bak", "kencing", "anyang", "anyang-anyangan", "air kecil", "urine", "urin", "pipis"]):
+        systems.append("Kemih / Saluran Kemih")
+
+    # Kulit
+    if any(w in t for w in ["ruam", "bintik", "gatal", "kemerahan", "benjolan kulit", "bercak kulit", "lentingan"]):
+        systems.append("Kulit")
+
+    return systems
 
 
 # =========================================================
@@ -203,7 +242,22 @@ with tab1:
                     else:
                         st.markdown("_Tidak ditemukan tanda bahaya dari teks._")
 
-                    # Ringkasan AI (Agent menggabungkan Tool1 + Tool2)
+                    # Tool 3 — Klasifikasi Sistem Tubuh
+                    systems = classify_body_system(user_input)
+                    st.markdown("### 🧭 Perkiraan Sistem Tubuh yang Terkait")
+                    if systems:
+                        st.markdown(
+                            "Gejala yang kamu sampaikan kemungkinan berkaitan dengan sistem berikut:"
+                        )
+                        for s in systems:
+                            st.markdown(f"- **{s}**")
+                    else:
+                        st.markdown(
+                            "_Belum dapat diidentifikasi jelas dari teks. "
+                            "Coba jelaskan lebih rinci lokasi, jenis keluhan, dan gejala lain._"
+                        )
+
+                    # Ringkasan AI (Agent menggabungkan Tool1 + Tool2 + Tool3)
                     if results:
                         ctx = "\n".join(
                             f"- {r['Disease']}: {r['Description'][:200]}"
@@ -212,35 +266,67 @@ with tab1:
                     else:
                         ctx = "Belum ada kecocokan penyakit yang kuat dari data."
 
+                    systems_str = ", ".join(systems) if systems else "Belum terklasifikasi jelas dari teks."
+
                     prompt = f"""
 Kamu adalah asisten kesehatan yang ramah dan berhati-hati.
-Gunakan informasi berikut untuk memberikan penjelasan edukatif, bukan diagnosis pasti.
+Jawabanmu hanya untuk edukasi, BUKAN diagnosis pasti.
 
-# Ringkasan hasil pencarian penyakit (Tool 1):
+# Ringkasan hasil pencarian penyakit (Tool 1 - RAG):
 {ctx}
 
-# Analisis tingkat keparahan (Tool 2):
+# Analisis tingkat keparahan (Tool 2 - Severity):
 - Level: {sev["level"]}
 - Tanda bahaya terdeteksi: {", ".join(sev["red"]) if sev["red"] else "Tidak ada"}
 
-# Keluhan pengguna:
+# Klasifikasi sistem tubuh (Tool 3 - Body System Classifier):
+- Sistem terkait (perkiraan): {systems_str}
+
+# Keluhan pengguna (apa adanya dari user):
 \"\"\"{user_input}\"\"\"
 
-# TUGASMU:
-1. Jelaskan kemungkinan penyebab atau kondisi umum yang sesuai dengan gejala pengguna 
-   berdasarkan hasil pencarian penyakit (tanpa menyebut 1 diagnosis pasti).
-2. Berikan 3–5 saran awal yang aman dilakukan di rumah.
-3. Jelaskan tanda bahaya yang harus membuat pengguna segera ke IGD/dokter.
-4. Berikan saran apa yang perlu disampaikan pengguna saat berkonsultasi dengan dokter:
-   - durasi gejala,
-   - lokasi nyeri,
-   - tingkat keparahan,
-   - gejala lain yang menyertai,
-   - riwayat penyakit bila ada.
+TUGASMU (IKUTI FORMAT DAN URUTAN BERIKUT):
+
+1. Buat bagian berjudul **"Interpretasi Awal Berdasarkan Keluhan"**.
+   - Ringkas kembali keluhan pengguna dengan bahasamu sendiri.
+   - Jelaskan pola gejala (misalnya: sudah berapa lama, lokasi nyeri, hal yang memicu atau memperberat).
+   - Jangan menyebut satu diagnosis pasti di bagian ini.
+
+2. Buat bagian **"Kemungkinan Kondisi yang Perlu Dipertimbangkan"**.
+   - Gunakan informasi dari daftar penyakit (Tool 1).
+   - Sebutkan 1–3 kondisi/penyakit yang MUNGKIN berhubungan dengan keluhan,
+     dengan kalimat seperti: 
+     "Salah satu kemungkinan yang dapat dipertimbangkan adalah ...",
+     "Kemungkinan lain yang kadang memiliki gejala serupa adalah ...".
+   - Jelaskan gejala khas masing-masing secara umum.
+   - Tekankan bahwa ini HANYA kemungkinan, bukan kepastian.
+
+3. Buat bagian **"Tindakan Awal yang Bisa Dilakukan di Rumah"**.
+   - Berikan 3–5 saran yang aman, sesuai dengan tingkat keparahan ({sev["level"]}).
+   - Contoh: istirahat, kompres, minum air, menghindari pemicu, dan sebagainya.
+   - Jangan menyarankan penggunaan obat resep secara spesifik.
+
+4. Buat bagian **"Tanda Bahaya yang Harus Diwaspadai"**.
+   - Jelaskan tanda-tanda bahaya yang perlu perhatian segera,
+     terutama jika ada tanda bahaya dari Tool 2 ({", ".join(sev["red"]) if sev["red"] else "Tidak ada red flag jelas dari teks"}).
+   - Jelaskan bahwa jika tanda-tanda ini muncul atau memburuk, pengguna harus segera ke IGD/dokter.
+
+5. Buat bagian **"Informasi yang Perlu Disampaikan ke Dokter"**.
+   - Berikan daftar poin yang sebaiknya disiapkan pengguna saat konsultasi, misalnya:
+     - durasi gejala,
+     - lokasi keluhan,
+     - tingkat keparahan (ringan/sedang/berat),
+     - gejala tambahan yang dirasakan,
+     - riwayat penyakit dan obat yang sedang dikonsumsi,
+     - hal-hal yang memperburuk atau meringankan keluhan.
+
+6. Buat bagian **"Catatan Penting"**.
+   - Tegaskan bahwa informasi yang kamu berikan hanya gambaran umum,
+     tidak bisa menggantikan pemeriksaan langsung oleh tenaga kesehatan.
+   - Tekankan bahwa hanya dokter yang dapat menegakkan diagnosis pasti.
 
 Gunakan bahasa Indonesia yang sopan, jelas, dan mudah dipahami.
 """
-
 
                     answer = call_gemini(prompt)
 
@@ -272,5 +358,3 @@ Gunakan aplikasi ini untuk:
 **Catatan:** Ini bukan pengganti pemeriksaan tenaga kesehatan.
         """
     )
-
-
