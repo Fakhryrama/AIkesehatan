@@ -11,7 +11,14 @@ st.set_page_config(page_title="Konsultasi Gejala (Agentic)", page_icon="🩺", l
 
 # API KEY SETUP
 # Pastikan API Key aman. Di production gunakan st.secrets
-api_key = "GEMINI_API_KEY" 
+try:
+    # Minta kunci dari brankas Streamlit Cloud
+    api_key = st.secrets["GEMINI_API_KEY"]
+except KeyError:
+    # Pesan error jika lupa setting di dashboard
+    st.error("API Key belum disetting di Dashboard Streamlit!")
+    st.stop()
+
 genai.configure(api_key=api_key)
 
 # =========================================================
@@ -203,6 +210,7 @@ if prompt := st.chat_input("Contoh: Saya sakit kepala belakang berdenyut sejak k
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
+
 
 
 
